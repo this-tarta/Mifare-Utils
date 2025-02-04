@@ -129,17 +129,6 @@ impl MifareCard {
         Ok(response[..16].to_vec())
     }
 
-    /// Reads data from a sector (including sector trailer)
-    pub fn read_sector(&self, sector: u8) -> Result<Vec<u8>, MifareError> {
-        let block = sector * 0x10;
-        let apdu = [0xFF, 0xB0, 0x08, block, 0x40];
-        let response = self.send_apdu(&apdu)?;
-        if response.len() < 0x42 || response[response.len() - 2..] != [0x90, 0x00] {
-            return Err(MifareError::ReadError);
-        }
-        Ok(response[..0x40].to_vec())
-    }
-
     /// Writes data to a specific block.
     pub fn write_block(&self, block: u8, data: &[u8; 16]) -> Result<(), MifareError> {
         let mut apdu = vec![0xFF, 0xD6, 0x00, block, 0x10];
