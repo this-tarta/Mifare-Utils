@@ -1,6 +1,6 @@
 //! A library for abstracting MIFARE Classic card reading using the `pcsc` crate.
-//! Tested on ACR1552U Reader and MIFARE Classic 1K cards
-//! ADPU commands follow documentation at: https://www.acs.com.hk/download-manual/13473/REF-ACR1552U-Series-1.05.pdf
+//! Tested on ACR122U Reader and MIFARE Classic 1K cards
+//! ADPU commands follow documentation at: https://downloads.acs.com.hk/drivers/en/API-ACR122U-2.02.pdf
 
 use std::ffi::CString;
 use pcsc::{Context, Protocols, Scope, Card, Error as PcscError};
@@ -121,7 +121,7 @@ impl MifareCard {
 
     /// Reads data from a specific block.
     pub fn read_block(&self, block: u8) -> Result<Vec<u8>, MifareError> {
-        let apdu = [0xFF, 0xB0, 0x08, block, 0x10];
+        let apdu = [0xFF, 0xB0, 0x00, block, 0x10];
         let response = self.send_apdu(&apdu)?;
         if response.len() < 18 || response[response.len() - 2..] != [0x90, 0x00] {
             return Err(MifareError::ReadError);
@@ -142,7 +142,7 @@ impl MifareCard {
 
     /// Writes data to a specific block.
     pub fn write_block(&self, block: u8, data: &[u8; 16]) -> Result<(), MifareError> {
-        let mut apdu = vec![0xFF, 0xD6, 0x08, block, 0x10];
+        let mut apdu = vec![0xFF, 0xD6, 0x00, block, 0x10];
         apdu.extend_from_slice(data);
         let response = self.send_apdu(&apdu)?;
         if response.len() < 2 || response[response.len() - 2..] != [0x90, 0x00] {
